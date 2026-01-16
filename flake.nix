@@ -16,11 +16,8 @@
   }: let
     systems = ["x86_64-linux" "aarch64-linux"];
     forAllSystems = nixpkgs.lib.genAttrs systems;
-  in {
-    packages = forAllSystems (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      qt6ct-kde = pkgs.qt6Packages.qt6ct.overrideAttrs (oldAttrs: {
+    mkPackage = qt6ctBase: kdePackages:
+      qt6ctBase.overrideAttrs (oldAttrs: {
         pname = "qt6ct-kde";
 
         patches =
@@ -31,7 +28,7 @@
 
         buildInputs =
           oldAttrs.buildInputs
-          ++ (with pkgs.kdePackages; [
+          ++ (with kdePackages; [
             kconfig
             kcolorscheme
             kiconthemes
@@ -39,19 +36,23 @@
 
         nativeBuildInputs =
           oldAttrs.nativeBuildInputs
-          ++ (with pkgs.kdePackages; [
+          ++ (with kdePackages; [
             extra-cmake-modules
           ]);
 
         cmakeFlags =
           oldAttrs.cmakeFlags
           ++ [
-            "-DKF6Config_DIR=${pkgs.kdePackages.kconfig}/lib/cmake/KF6Config"
-            "-DKF6ColorScheme_DIR=${pkgs.kdePackages.kcolorscheme}/lib/cmake/KF6ColorScheme"
-            "-DKF6IconThemes_DIR=${pkgs.kdePackages.kiconthemes}/lib/cmake/KF6IconThemes"
+            "-DKF6Config_DIR=${kdePackages.kconfig}/lib/cmake/KF6Config"
+            "-DKF6ColorScheme_DIR=${kdePackages.kcolorscheme}/lib/cmake/KF6ColorScheme"
+            "-DKF6IconThemes_DIR=${kdePackages.kiconthemes}/lib/cmake/KF6IconThemes"
           ];
       });
-
+  in {
+    packages = forAllSystems (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      qt6ct-kde = mkPackage pkgs.qt6Packages.qt6ct pkgs.kdePackages;
       default = self.packages.${system}.qt6ct-kde;
     });
 
@@ -59,7 +60,7 @@
       qt6Packages =
         prev.qt6Packages
         // {
-          qt6ct = self.packages.${final.system}.qt6ct-kde;
+          qt6ct = mkPackage prev.qt6Packages.qt6ct final.kdePackages;
         };
     };
   };

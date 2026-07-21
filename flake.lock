@@ -19,7 +19,7 @@
     "patchset": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-qOTaoqfES2eT7shVxZbg+SHT1/0Mg/j4SWAzybtnszQ=",
+        "narHash": "sha256-93qsKWGYHwVvsAgQm3umSI61VqmQ3dvc2wSxgL+4NtI=",
         "type": "file",
         "url": "https://aur.archlinux.org/cgit/aur.git/plain/qt6ct-shenanigans.patch?h=qt6ct-kde"
       },
